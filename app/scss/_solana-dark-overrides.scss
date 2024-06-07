@@ -35,9 +35,21 @@ ul.log-messages {
     border-color: $card-outline-color !important;
     box-shadow: $card-box-shadow !important;
     min-height: 52px !important;
+    max-width: 600px; // Adjust the width as needed
+    margin: 0 auto; // Centers the container
+    border-radius: 20px; // Makes the corners more rounded
+    padding: 0.5rem; // Optional: Adds some padding for a better look
+    display: flex; // Ensure the control is flex container to manage inner elements
+    position: relative; // Ensure relative positioning for the menu
 
     .search-bar__input {
         color: $white !important;
+        width: 100%; // Makes the input take the full width of the container
+        border-radius: inherit; // Ensures the input inherits the border-radius from the container
+        border: none; // Removes default input border
+        outline: none; // Removes default input outline
+        background-color: inherit; // Matches the background color of the container
+        padding: 0; // Remove default padding
     }
 }
 
@@ -45,10 +57,17 @@ ul.log-messages {
     background-color: $gray-800-dark !important;
     border: 1px solid $card-outline-color !important;
     box-shadow: $card-box-shadow !important;
+    width: 100%; // Matches the width of the control
+    max-width: 600px; // Adjust the width as needed
+    position: absolute; // Position it absolutely
+    top: 100%; // Position it right below the control
+    left: 50%; // Start from the center
+    transform: translateX(-50%); // Center the menu
+    z-index: 1000; // Ensure it appears above other elements
 
     .search-bar__option {
         cursor: pointer;
-    
+
         &.search-bar__option--is-focused,
         &:hover {
             background-color: $gray-700-dark !important;

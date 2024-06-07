@@ -23,23 +23,20 @@ import { abbreviatedNumber, lamportsToSol, slotsToHumanString } from '@utils/ind
 import { percentage } from '@utils/math';
 import React from 'react';
 
+import { SearchBar } from './components/SearchBar';
+import Logo from '@img/logos-solana/XRAY.svg';
+
+import Image from 'next/image';
+import Link from 'next/link';
+
 export default function Page() {
     return (
         <StatsProvider>
             <SupplyProvider>
                 <div className="container mt-4">
                     <StakingComponent />
-                    <div className="card">
-                        <div className="card-header">
-                            <div className="row align-items-center">
-                                <div className="col">
-                                    <h4 className="card-header-title">Live Cluster Stats</h4>
-                                </div>
-                            </div>
-                        </div>
-                        <StatsCardBody />
-                    </div>
-                    <LiveTransactionStatsCard />
+                    <Image alt="XRAY" height={100} src={Logo} width={1100} className="container mt-6"/>
+                    <SearchBar />
                 </div>
             </SupplyProvider>
         </StatsProvider>
@@ -47,89 +44,48 @@ export default function Page() {
 }
 
 function StakingComponent() {
-    const { status } = useCluster();
-    const supply = useSupply();
-    const fetchSupply = useFetchSupply();
-    const { fetchVoteAccounts, voteAccounts } = useVoteAccounts();
+    const performanceInfo = usePerformanceInfo();
 
-    function fetchData() {
-        fetchSupply();
-        fetchVoteAccounts();
+    if (performanceInfo.status !== ClusterStatsStatus.Ready) {
+        return <StatsNotReady error={performanceInfo.status === ClusterStatsStatus.Error} />;
     }
 
-    React.useEffect(() => {
-        if (status === ClusterStatus.Connected) {
-            fetchData();
-        }
-    }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const delinquentStake = React.useMemo(() => {
-        if (voteAccounts) {
-            return voteAccounts.delinquent.reduce((prev, current) => prev + current.activatedStake, BigInt(0));
-        }
-    }, [voteAccounts]);
-
-    const activeStake = React.useMemo(() => {
-        if (voteAccounts && delinquentStake) {
-            return voteAccounts.current.reduce((prev, current) => prev + current.activatedStake, BigInt(0)) + delinquentStake;
-        }
-    }, [voteAccounts, delinquentStake]);
-
-    if (supply === Status.Disconnected) {
-        // we'll return here to prevent flicker
-        return null;
-    }
-
-    if (supply === Status.Idle || supply === Status.Connecting) {
-        return <LoadingCard message="Loading supply data" />;
-    } else if (typeof supply === 'string') {
-        return <ErrorCard text={supply} retry={fetchData} />;
-    }
-
-    // Calculate to 2dp for accuracy, then display as 1
-    const circulatingPercentage = percentage(supply.circulating, supply.total, 2).toFixed(1);
-
-    let delinquentStakePercentage;
-    if (delinquentStake && activeStake) {
-        delinquentStakePercentage = percentage(delinquentStake, activeStake, 2).toFixed(1);
-    }
+    const { avgTps } = performanceInfo;
+    const averageTps = Math.round(avgTps).toLocaleString('en-US');
 
     return (
         <div className="row staking-card">
             <div className="col-6 col-xl">
                 <div className="card">
                     <div className="card-body">
-                        <h4>Circulating Supply</h4>
+                        <h4>User TPS</h4>
                         <h1>
-                            <em>{displayLamports(supply.circulating)}</em> /{' '}
-                            <small>{displayLamports(supply.total)}</small>
+                        <em>{averageTps}</em> / <small>{averageTps}</small>
+                            <small>{}</small>
                         </h1>
                         <h5>
-                            <em>{circulatingPercentage}%</em> is circulating
+                             Total TPS: <em>{averageTps}</em>
                         </h5>
                     </div>
                 </div>
             </div>
             <div className="col-6 col-xl">
                 <div className="card">
-                    <div className="card-body">
-                        <h4>Active Stake</h4>
-                        {activeStake ? (
-                            <h1>
-                                <em>{displayLamports(activeStake)}</em> / <small>{displayLamports(supply.total)}</small>
-                            </h1>
-                        ) : null}
-                        {delinquentStakePercentage && (
-                            <h5>
-                                Delinquent stake: <em>{delinquentStakePercentage}%</em>
-                            </h5>
-                        )}
-                    </div>
+                <div className="card-body">
+                    <h4>User TPS</h4>
+                    <h1>
+                        <em>{averageTps}</em> / <small>{averageTps}</small>
+                    </h1>
+                        <h5>
+                            Total TPS: <em>{averageTps}</em>
+                        </h5>
+                </div>
                 </div>
             </div>
         </div>
     );
 }
+
 
 function displayLamports(value: number | bigint) {
     return abbreviatedNumber(lamportsToSol(value));

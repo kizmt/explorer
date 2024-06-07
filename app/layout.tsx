@@ -45,7 +45,6 @@ export default function RootLayout({
                             <Navbar />
                             <MessageBanner />
                             <ClusterStatusBanner />
-                            <SearchBar />
                             {children}
                         </div>
                     </ClusterProvider>
