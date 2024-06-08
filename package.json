@@ -26,6 +26,7 @@
         "@solana/spl-token": "^0.1.8",
         "@solana/web3.js": "^1.66.6",
         "@solflare-wallet/utl-sdk": "^1.4.0",
+        "@tabler/icons-react": "^3.5.0",
         "@types/bn.js": "5.1.0",
         "axios": "^0.27.2",
         "bignumber.js": "^9.0.2",

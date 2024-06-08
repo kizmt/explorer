@@ -1,7 +1,5 @@
-//
 // solana.scss
 // Use this to write your custom SCSS
-//
 
 code,
 pre {
@@ -73,4 +71,45 @@ ul.log-messages {
             background-color: $gray-700-dark !important;
         }
     }
+}
+
+// Footer styles
+.footer {
+    background-color: $gray-800-dark; // Adjust the background color
+    color: #fff; // Adjust the text color
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    nav ul {
+        display: flex;
+        gap: 1rem; // Adjust the gap between items
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            a {
+                transition: color 0.2s;
+
+                &:hover {
+                    color: $primary; // Adjust the hover color
+                }
+            }
+        }
+    }
+}
+
+// solana.scss
+// Other styles...
+
+.text-center-bold {
+    text-align: center;
+    font-weight: bold;
+    color: $text-headers; // Adjust the color if needed
+    margin-top: 1rem; // Adjust the margin-top if needed
 }

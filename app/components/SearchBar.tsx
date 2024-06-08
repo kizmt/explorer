@@ -63,7 +63,7 @@ export function SearchBar() {
 
     const resetValue = '' as any;
     return (
-        <div className="container my-6">
+        <div className="container my-5">
             <div className="row align-items-center">
                 <div className="col">
                     <AsyncSelect

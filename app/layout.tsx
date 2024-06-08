@@ -9,6 +9,7 @@ import { ClusterProvider } from '@providers/cluster';
 import { ScrollAnchorProvider } from '@providers/scroll-anchor';
 import { Rubik } from 'next/font/google';
 import { Metadata } from 'next/types';
+import { Footer } from './components/Footer';
 
 export const metadata: Metadata = {
     description: 'Inspect transactions, accounts, blocks, and more on the Solana blockchain',
@@ -47,6 +48,8 @@ export default function RootLayout({
                             <ClusterStatusBanner />
                             {children}
                         </div>
+                        <Footer />
+
                     </ClusterProvider>
                 </ScrollAnchorProvider>
                 {analytics}
