@@ -1,16 +1,16 @@
 'use client'
 
-import React from 'react';
-import Image from 'next/image';
-import Logo from '@img/logos-solana/XRAY.svg';
 import { Epoch } from '@components/common/Epoch';
 import { ErrorCard } from '@components/common/ErrorCard';
 import { LoadingCard } from '@components/common/LoadingCard';
 import { Slot } from '@components/common/Slot';
 import { TableCardBody } from '@components/common/TableCardBody';
 import { TimestampToggle } from '@components/common/TimestampToggle';
+import { Footer } from '@components/Footer';
 import { LiveTransactionStatsCard } from '@components/LiveTransactionStatsCard';
+import { SearchBar } from '@components/SearchBar';
 import { StatsNotReady } from '@components/StatsNotReady';
+import Logo from '@img/logos-solana/XRAY.svg';
 import { useVoteAccounts } from '@providers/accounts/vote-accounts';
 import { useCluster } from '@providers/cluster';
 import { StatsProvider } from '@providers/stats';
@@ -24,8 +24,8 @@ import { Status, SupplyProvider, useFetchSupply, useSupply } from '@providers/su
 import { ClusterStatus } from '@utils/cluster';
 import { abbreviatedNumber, lamportsToSol, slotsToHumanString } from '@utils/index';
 import { percentage } from '@utils/math';
-import { SearchBar } from '@components/SearchBar';
-import { Footer } from '@components/Footer';
+import Image from 'next/image';
+import React from 'react';
 
 export default function Page() {
     return (
@@ -59,6 +59,7 @@ function StakingComponent() {
             performanceInfo.status === ClusterStatsStatus.Error || dashboardInfo.status === ClusterStatsStatus.Error;
         return <StatsNotReady error={error} />;
     }
+
     const { avgTps } = performanceInfo;
     const averageTps = Math.round(avgTps).toLocaleString('en-US');
     const { avgSlotTime_1h, avgSlotTime_1min, epochInfo, blockTime } = dashboardInfo;
@@ -69,34 +70,30 @@ function StakingComponent() {
     const epochTimeRemaining = slotsToHumanString(Number(slotsInEpoch - slotIndex), hourlySlotTime);
     const { blockHeight, absoluteSlot } = epochInfo;
 
-
     return (
         <div className="row staking-card">
             <div className="col-6 col-xl">
                 <div className="card">
                     <div className="card-body">
-                        <h4>Epoch</h4>
+                        <h4>Network Cycle</h4>
                         <h1>
-                        <em>{epochProgress}</em> <small><Epoch epoch={epochInfo.epoch} link/></small>
-                            <small>{}</small>
+                            <em>{epochProgress}</em> <small><Epoch epoch={epochInfo.epoch} link/></small>
                         </h1>
-                        <h5>
-                        Time left: <em>{epochTimeRemaining}</em>
-                        </h5>
+                        <h5>Time left: <em>{epochTimeRemaining}</em></h5>
                     </div>
                 </div>
             </div>
             <div className="col-6 col-xl">
                 <div className="card">
-                <div className="card-body">
-                    <h4>User TPS</h4>
-                    <h1>
-                        <em>{averageTps}</em> / <small>{averageTps}</small>
-                    </h1>
+                    <div className="card-body">
+                        <h4>User Transactions</h4>
+                        <h1>
+                            <em>{averageTps}</em> <small>per second</small>
+                        </h1>
                         <h5>
                             Total TPS: <em>{averageTps}</em>
                         </h5>
-                </div>
+                    </div>
                 </div>
             </div>
         </div>
