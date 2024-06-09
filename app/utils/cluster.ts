@@ -39,9 +39,9 @@ export function clusterName(cluster: Cluster): string {
     }
 }
 
-export const MAINNET_BETA_URL = 'https://mainnet.helius-rpc.com/?api-key=da349cfc-524a-4b6c-b5a3-6fce93ad8695';
+export const MAINNET_BETA_URL = 'https://mainnet.helius-rpc.com/?api-key=da349cfc-524a-4b6c-b5a3-6fce93ad8695/';
 export const TESTNET_URL = 'https://api.testnet.solana.com';
-export const DEVNET_URL = 'https://devnet.helius-rpc.com/?api-key=da349cfc-524a-4b6c-b5a3-6fce93ad8695';
+export const DEVNET_URL = 'https://api.devnet.solana.com';
 
 export function clusterUrl(cluster: Cluster, customUrl: string): string {
     const modifyUrl = (url: string): string => {
@@ -56,12 +56,13 @@ export function clusterUrl(cluster: Cluster, customUrl: string): string {
         case Cluster.Devnet:
             return process.env.NEXT_PUBLIC_DEVNET_RPC_URL ?? modifyUrl(DEVNET_URL);
         case Cluster.MainnetBeta:
-            return process.env.NEXT_PUBLIC_MAINNET_RPC_URL ?? modifyUrl(MAINNET_BETA_URL);
+            return process.env.NEXT_PUBLIC_MAINNET_RPC_URL ?? MAINNET_BETA_URL;
         case Cluster.Testnet:
             return process.env.NEXT_PUBLIC_TESTNET_RPC_URL ?? modifyUrl(TESTNET_URL);
         case Cluster.Custom:
             return customUrl;
     }
 }
+
 
 export const DEFAULT_CLUSTER = Cluster.MainnetBeta;
