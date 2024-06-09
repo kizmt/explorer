@@ -60,8 +60,9 @@ function StakingComponent() {
         return <StatsNotReady error={error} />;
     }
 
-    const { avgTps } = performanceInfo;
+    const { avgTps, trueTps } = performanceInfo;
     const averageTps = Math.round(avgTps).toLocaleString('en-US');
+    const userTps = Math.round(trueTps).toLocaleString('en-US');
     const { avgSlotTime_1h, avgSlotTime_1min, epochInfo, blockTime } = dashboardInfo;
     const hourlySlotTime = Math.round(1000 * avgSlotTime_1h);
     const averageSlotTime = Math.round(1000 * avgSlotTime_1min);
@@ -88,7 +89,7 @@ function StakingComponent() {
                     <div className="card-body">
                         <h4>User Transactions</h4>
                         <h1>
-                            <em>{averageTps}</em> <small>per second</small>
+                            <em>{userTps}</em> <small>per second</small>
                         </h1>
                         <h5>
                             Total TPS: <em>{averageTps}</em>

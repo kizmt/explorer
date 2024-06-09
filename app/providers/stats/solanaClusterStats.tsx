@@ -33,6 +33,7 @@ const initialPerformanceInfo: PerformanceInfo = {
     },
     status: ClusterStatsStatus.Loading,
     transactionCount: BigInt(0),
+    trueTps: 0,
 };
 
 const initialDashboardInfo: DashboardInfo = {
@@ -73,6 +74,7 @@ export function SolanaClusterStatsProvider({ children }: Props) {
     const [dashboardInfo, dispatchDashboardInfo] = React.useReducer(dashboardInfoReducer, initialDashboardInfo);
     const [performanceInfo, dispatchPerformanceInfo] = React.useReducer(performanceInfoReducer, initialPerformanceInfo);
     const { visible: isTabVisible } = useTabVisibility();
+    
     React.useEffect(() => {
         if (!active || !isTabVisible || !url) return;
 
@@ -81,29 +83,55 @@ export function SolanaClusterStatsProvider({ children }: Props) {
 
         let lastSlot: bigint | null = null;
         let stale = false;
+
         const getPerformanceSamples = async () => {
             try {
                 const samplesResponse = await rpc.getRecentPerformanceSamples(60 * SAMPLE_HISTORY_HOURS).send();
-
-                const samples: PerformanceSample[] = samplesResponse.map(s => ({
-                    numSlots: s.numSlots,
-                    numTransactions: s.numTransactions,
-                    samplePeriodSecs: s.samplePeriodSecs,
-                }));
-
+        
+                console.log("Raw samplesResponse:", samplesResponse);
+        
+                const samples: PerformanceSample[] = samplesResponse.map(s => {
+                    const numNonVoteTransactions = s.numNonVoteTransactions !== undefined ? BigInt(s.numNonVoteTransactions) : BigInt(0);
+                    const numSlots = s.numSlots !== undefined ? BigInt(s.numSlots) : BigInt(0);
+                    const numTransactions = s.numTransactions !== undefined ? BigInt(s.numTransactions) : BigInt(0);
+                    const samplePeriodSecs = s.samplePeriodSecs !== undefined ? Number(s.samplePeriodSecs) : 0;
+        
+                    console.log("Before conversion:", {
+                        numNonVoteTransactions: s.numNonVoteTransactions,
+                        numSlots: s.numSlots,
+                        numTransactions: s.numTransactions,
+                        samplePeriodSecs: s.samplePeriodSecs,
+                    });
+        
+                    console.log("After conversion:", {
+                        numNonVoteTransactions,
+                        numSlots,
+                        numTransactions,
+                        samplePeriodSecs,
+                    });
+        
+                    return {
+                        numNonVoteTransactions,
+                        numSlots,
+                        numTransactions,
+                        samplePeriodSecs,
+                    };
+                });
+        
+                console.log("Processed samples:", samples);
+        
                 if (stale) {
                     return;
                 }
-                if (samplesResponse.length < 1) {
-                    // no samples to work with (node has no history).
-                    return; // we will allow for a timeout instead of throwing an error
+                if (samples.length < 1) {
+                    return; // No samples to work with (node has no history).
                 }
-
+        
                 dispatchPerformanceInfo({
                     data: samples,
                     type: PerformanceInfoActionType.SetPerfSamples,
                 });
-
+        
                 dispatchDashboardInfo({
                     data: samples,
                     type: DashboardInfoActionType.SetPerfSamples,
@@ -124,8 +152,8 @@ export function SolanaClusterStatsProvider({ children }: Props) {
                 }
                 setActive(false);
             }
-        };
-
+        };        
+        
         const getTransactionCount = async () => {
             try {
                 const transactionCount = await rpc.getTransactionCount({ commitment: 'confirmed' }).send();
