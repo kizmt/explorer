@@ -60,7 +60,6 @@ export type PerformanceInfoAction =
                     return state;
                 }
     
-                console.log("Received samples:", action.data);
     
                 const short = action.data
                     .filter(sample => sample.numTransactions !== BigInt(0))
@@ -68,17 +67,12 @@ export type PerformanceInfoAction =
                         const avgTps = Number(sample.numTransactions) / sample.samplePeriodSecs;
                         const trueTps = Number(sample.numNonVoteTransactions) / sample.samplePeriodSecs;
     
-                        console.log(`Sample: numTransactions=${sample.numTransactions}, numNonVoteTransactions=${sample.numNonVoteTransactions}, samplePeriodSecs=${sample.samplePeriodSecs}`);
-                        console.log(`Calculated: avgTps=${avgTps}, trueTps=${trueTps}`);
-    
                         return { avgTps, trueTps };
                     });
     
                 const avgTps = short.length > 0 ? short.reduce((sum, s) => sum + s.avgTps, 0) / short.length : 0;
                 const trueTps = short.length > 0 ? short.reduce((sum, s) => sum + s.trueTps, 0) / short.length : 0;
-    
-                console.log(`Final: avgTps=${avgTps}, trueTps=${trueTps}`);
-    
+        
                 const medium = downsampleByFactor(short.map(s => s.avgTps), 4);
                 const long = downsampleByFactor(medium, 3);
     

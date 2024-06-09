@@ -87,28 +87,13 @@ export function SolanaClusterStatsProvider({ children }: Props) {
         const getPerformanceSamples = async () => {
             try {
                 const samplesResponse = await rpc.getRecentPerformanceSamples(60 * SAMPLE_HISTORY_HOURS).send();
-        
-                console.log("Raw samplesResponse:", samplesResponse);
-        
+                
                 const samples: PerformanceSample[] = samplesResponse.map(s => {
                     const numNonVoteTransactions = s.numNonVoteTransactions !== undefined ? BigInt(s.numNonVoteTransactions) : BigInt(0);
                     const numSlots = s.numSlots !== undefined ? BigInt(s.numSlots) : BigInt(0);
                     const numTransactions = s.numTransactions !== undefined ? BigInt(s.numTransactions) : BigInt(0);
                     const samplePeriodSecs = s.samplePeriodSecs !== undefined ? Number(s.samplePeriodSecs) : 0;
         
-                    console.log("Before conversion:", {
-                        numNonVoteTransactions: s.numNonVoteTransactions,
-                        numSlots: s.numSlots,
-                        numTransactions: s.numTransactions,
-                        samplePeriodSecs: s.samplePeriodSecs,
-                    });
-        
-                    console.log("After conversion:", {
-                        numNonVoteTransactions,
-                        numSlots,
-                        numTransactions,
-                        samplePeriodSecs,
-                    });
         
                     return {
                         numNonVoteTransactions,
@@ -117,9 +102,7 @@ export function SolanaClusterStatsProvider({ children }: Props) {
                         samplePeriodSecs,
                     };
                 });
-        
-                console.log("Processed samples:", samples);
-        
+                
                 if (stale) {
                     return;
                 }
