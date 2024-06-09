@@ -303,34 +303,12 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
                     </td>
                 </tr>
 
-                {blockhash && (
-                    <tr>
-                        <td>
-                            {isNonce ? (
-                                'Nonce'
-                            ) : (
-                                <InfoTooltip text="Transactions use a previously confirmed blockhash as a nonce to prevent double spends">
-                                    Recent Blockhash
-                                </InfoTooltip>
-                            )}
-                        </td>
-                        <td className="text-lg-end">{blockhash}</td>
-                    </tr>
-                )}
-
                 {fee && (
                     <tr>
                         <td>Fee (SOL)</td>
                         <td className="text-lg-end">
                             <SolBalance lamports={fee} />
                         </td>
-                    </tr>
-                )}
-
-                {computeUnitsConsumed !== undefined && (
-                    <tr>
-                        <td>Compute units consumed</td>
-                        <td className="text-lg-end">{computeUnitsConsumed.toLocaleString('en-US')}</td>
                     </tr>
                 )}
 
@@ -374,10 +352,6 @@ function DetailsSection({ signature }: SignatureProps) {
 
     return (
         <>
-            <AccountsCard signature={signature} />
-            <TokenBalancesCard signature={signature} />
-            <InstructionsSection signature={signature} />
-            <ProgramLogSection signature={signature} />
         </>
     );
 }
