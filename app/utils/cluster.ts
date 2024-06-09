@@ -39,7 +39,7 @@ export function clusterName(cluster: Cluster): string {
     }
 }
 
-export const MAINNET_BETA_URL = 'https://mainnet.helius-rpc.com/?api-key=da349cfc-524a-4b6c-b5a3-6fce93ad8695/';
+export const MAINNET_BETA_URL = 'https://mainnet.helius-rpc.com/?api-key=da349cfc-524a-4b6c-b5a3-6fce93ad8695';
 export const TESTNET_URL = 'https://api.testnet.solana.com';
 export const DEVNET_URL = 'https://api.devnet.solana.com';
 
