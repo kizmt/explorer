@@ -1,7 +1,6 @@
 'use client';
 
 import { ErrorCard } from '@components/common/ErrorCard';
-import { InfoTooltip } from '@components/common/InfoTooltip';
 import { LoadingCard } from '@components/common/LoadingCard';
 import { Signature } from '@components/common/Signature';
 import { Slot } from '@components/common/Slot';
@@ -200,92 +199,106 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
     }
 
     return (
-        <div className="card">
-            <div className="card-header align-items-center">
-                <h3 className="card-header-title">Overview</h3>
-                <Link className="btn btn-white btn-sm me-2" href={inspectPath}>
-                    <Settings className="align-text-top me-2" size={13} />
-                    Inspect
-                </Link>
-                {autoRefresh === AutoRefresh.Active ? (
-                    <span className="spinner-grow spinner-grow-sm"></span>
-                ) : (
-                    <button className="btn btn-white btn-sm" onClick={() => fetchStatus(signature)}>
-                        <RefreshCw className="align-text-top me-2" size={13} />
-                        Refresh
-                    </button>
-                )}
-            </div>
+        <div className="d-flex justify-content-center mt-5">
+            <div className="card" style={{ maxWidth: '600px' }}>
+                <div className="card-header align-items-center">
+                    <h3 className="card-header-title">Overview</h3>
+                    <Link className="btn btn-white btn-sm me-2" href={inspectPath}>
+                        <Settings className="align-text-top me-2" size={13} />
+                        Inspect
+                    </Link>
+                    {autoRefresh === AutoRefresh.Active ? (
+                        <span className="spinner-grow spinner-grow-sm"></span>
+                    ) : (
+                        <button className="btn btn-white btn-sm" onClick={() => fetchStatus(signature)}>
+                            <RefreshCw className="align-text-top me-2" size={13} />
+                            Refresh
+                        </button>
+                    )}
+                </div>
+                <div className="d-flex justify-content-center mb-3">
+                    <div className="text-center">
+                        <p>Sender: ExampleSender</p>
+                        <p>Receiver: ExampleReceiver</p>
+                        <p>Amount: 1.23 SOL</p>
+                    </div>
+                </div>
 
-            <TableCardBody>
-                <tr>
-                    <td>Signature</td>
-                    <td className="text-lg-end">
-                        <Signature signature={signature} alignRight />
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>Result</td>
-                    <td className="text-lg-end">
-                        <h3 className="mb-0">
-                            <span className={`badge bg-${statusClass}-soft`}>{statusText}</span>
-                        </h3>
-                    </td>
-                </tr>
-
-                {errorReason !== undefined && (
+                <TableCardBody>
                     <tr>
-                        <td>Error</td>
+                        <td>Signature</td>
+                        <td className="text-lg-end">
+                            <Signature signature={signature} alignRight/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Result</td>
                         <td className="text-lg-end">
                             <h3 className="mb-0">
-                                {errorLink !== undefined ? (
-                                    <Link href={errorLink}>
-                                        <span className={`badge bg-${statusClass}-soft`}>{errorReason}</span>
-                                    </Link>
-                                ) : (
-                                    <span className={`badge bg-${statusClass}-soft`}>{errorReason}</span>
-                                )}
+                                <span className={`badge bg-${statusClass}-soft`}>{statusText}</span>
                             </h3>
                         </td>
                     </tr>
-                )}
 
-                <tr>
-                    <td>Timestamp</td>
-                    <td className="text-lg-end">
-                        {info.timestamp !== 'unavailable' ? (
-                            <span className="font-monospace">{displayTimestamp(info.timestamp * 1000)}</span>
-                        ) : (
-                            <InfoTooltip bottom right text="Timestamps are only available for confirmed blocks">
-                                Unavailable
-                            </InfoTooltip>
-                        )}
-                    </td>
-                </tr>
+                    {errorReason !== undefined && (
+                        <tr>
+                            <td>Error</td>
+                            <td className="text-lg-end">
+                                {errorLink !== undefined ? (
+                                    <Link className="text-warning" href={errorLink}>
+                                        {errorReason}
+                                    </Link>
+                                ) : (
+                                    <span className="text-warning">{errorReason}</span>
+                                )}
+                            </td>
+                        </tr>
+                    )}
 
-                <tr>
-                    <td>Confirmation Status</td>
-                    <td className="text-lg-end text-uppercase">{info.confirmationStatus || 'Unknown'}</td>
-                </tr>
-
-                <tr>
-                    <td>Slot</td>
-                    <td className="text-lg-end">
-                        <Slot slot={info.slot} link />
-                    </td>
-                </tr>
-
-                {fee && (
                     <tr>
-                        <td>Fee (SOL)</td>
+                        <td>Timestamp</td>
                         <td className="text-lg-end">
-                            <SolBalance lamports={fee} />
+                            {info.timestamp !== 'unavailable' ? (
+                                displayTimestamp(info.timestamp * 1000) // Pass true to use short timezone name
+                            ) : (
+                                <span className="text-muted">Unavailable</span>
+                            )}
                         </td>
                     </tr>
-                )}
 
-            </TableCardBody>
+                    <tr>
+                        <td>Slot</td>
+                        <td className="text-lg-end">
+                            <Slot slot={info.slot} link />
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Confirmations</td>
+                        <td className="text-lg-end">
+                            {info.confirmations !== 'max' ? (
+                                info.confirmations === undefined ? (
+                                    <span className="text-muted">Unknown</span>
+                                ) : (
+                                    info.confirmations
+                                )
+                            ) : (
+                                'Max'
+                            )}
+                        </td>
+                    </tr>
+
+                    {fee !== undefined && (
+                        <tr>
+                            <td>Fee</td>
+                            <td className="text-lg-end">
+                                <SolBalance lamports={fee} />
+                            </td>
+                        </tr>
+                    )}
+                </TableCardBody>
+            </div>
         </div>
     );
 }
@@ -322,5 +335,3 @@ function DetailsSection({ signature }: SignatureProps) {
         </>
     );
 }
-
-

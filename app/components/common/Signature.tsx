@@ -13,13 +13,15 @@ type Props = {
     truncateChars?: number;
 };
 
-export function Signature({ signature, alignRight, link, truncate, truncateChars }: Props) {
+export function Signature({ signature, alignRight, link, truncate = true, truncateChars = 10 }: Props) {
     let signatureLabel = signature;
 
-    if (truncateChars) {
+    if (truncate && signature.length > truncateChars) {
         signatureLabel = signature.slice(0, truncateChars) + '…';
     }
+
     const transactionPath = useClusterPath({ pathname: `/tx/${signature}` });
+
     return (
         <div className={`d-flex align-items-center ${alignRight ? 'justify-content-end' : ''}`}>
             <Copyable text={signature} replaceText={!alignRight}>
