@@ -2,9 +2,8 @@
 
 import { useCluster } from '@providers/cluster';
 import { Cluster } from '@utils/cluster';
-import bs58 from 'bs58';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useId } from 'react';
+import React, { useCallback, useEffect, useId, useState } from 'react';
 import { Search } from 'react-feather';
 import { ActionMeta, InputActionMeta, ValueType } from 'react-select';
 import AsyncSelect from 'react-select/async';
@@ -32,6 +31,10 @@ export function SearchBar() {
     const router = useRouter();
     const { cluster, clusterInfo } = useCluster();
     const searchParams = useSearchParams();
+    const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
+    const [badgeOptions, setBadgeOptions] = useState<SearchOptions[]>([]);
+    const [defaultOptions, setDefaultOptions] = useState<SearchOptions[]>([]);
+
     const onChange = ({ pathname }: ValueType<any, false>, meta: ActionMeta<any>) => {
         if (meta.action === 'select-option') {
             const nextQueryString = searchParams?.toString();
@@ -43,11 +46,83 @@ export function SearchBar() {
     const onInputChange = (value: string, { action }: InputActionMeta) => {
         if (action === 'input-change') {
             setSearch(value);
+            setSelectedBadge(null);
         }
     };
 
+    const loadOptions = async (inputValue: string) => {
+        if (selectedBadge) {
+            switch (selectedBadge) {
+                case 'Programs':
+                    return [buildProgramOptions(inputValue, cluster)];
+                case 'Program Loaders':
+                    return [buildLoaderOptions(inputValue)];
+                case 'Sysvars':
+                    return [buildSysvarOptions(inputValue)];
+                case 'Accounts':
+                    return [buildSpecialOptions(inputValue)];
+                case 'Tokens':
+                    return [await buildTokenOptions(inputValue, cluster)];
+                default:
+                    return defaultOptions;
+            }
+        } else {
+            return performSearch(inputValue);
+        }
+    };
+
+    const handleBadgeClick = async (option: string) => {
+        setSelectedBadge(option);
+        setSearch('');
+        let options = [];
+        switch (option) {
+            case 'Programs':
+                options = [buildProgramOptions('', cluster)];
+                break;
+            case 'Program Loaders':
+                options = [buildLoaderOptions('')];
+                break;
+            case 'Sysvars':
+                options = [buildSysvarOptions('')];
+                break;
+            case 'Accounts':
+                options = [buildSpecialOptions('')];
+                break;
+            case 'Tokens':
+                options = [await buildTokenOptions('', cluster)];
+                break;
+            default:
+                options = defaultOptions;
+        }
+        setBadgeOptions(options.filter(Boolean) as SearchOptions[]);
+    };
+
+    useEffect(() => {
+        const fetchDefaultOptions = async () => {
+            const options = [
+                buildProgramOptions('', cluster),
+                buildLoaderOptions(''),
+                buildSysvarOptions(''),
+                buildSpecialOptions(''),
+                await buildTokenOptions('', cluster),
+            ].filter(Boolean) as SearchOptions[];
+            setDefaultOptions(options);
+        };
+
+        fetchDefaultOptions();
+    }, [cluster]);
+
+    useEffect(() => {
+        if (selectedBadge) {
+            loadOptions('');
+        }
+    }, [selectedBadge]);
+
     async function performSearch(search: string): Promise<SearchOptions[]> {
-        const localOptions = buildOptions(search, cluster, clusterInfo?.epochInfo.epoch);
+        const epoch = clusterInfo?.epochInfo?.epoch ? Number(clusterInfo.epochInfo.epoch) : undefined;
+        const slotsInEpoch = clusterInfo?.epochInfo?.slotsInEpoch ? Number(clusterInfo.epochInfo.slotsInEpoch) : undefined;
+
+        const localOptions = buildOptions(search, cluster, epoch, slotsInEpoch);
         let tokenOptions;
         try {
             tokenOptions = await buildTokenOptions(search, cluster);
@@ -62,14 +137,28 @@ export function SearchBar() {
     }
 
     const resetValue = '' as any;
+
     return (
         <div className="container my-5">
-            <div className="row align-items-center">
-                <div className="col">
+            <div className="row align-items-center justify-content-center mb-3">
+                <div className="badge-container text-center">
+                    {defaultOptions.map((option, index) => (
+                        <span
+                            key={index}
+                            className={`badge mx-1 rainbow-${(index % 5) + 1} ${selectedBadge === option.label ? 'active' : ''}`}
+                            onClick={() => handleBadgeClick(option.label)}
+                        >
+                            {option.label}
+                        </span>
+                    ))}
+                </div>
+            </div>
+            <div className="row align-items-center justify-content-center">
+                <div className="col-md-8 position-relative">
                     <AsyncSelect
                         cacheOptions
-                        defaultOptions
-                        loadOptions={performSearch}
+                        defaultOptions={badgeOptions.length ? badgeOptions : defaultOptions}
+                        loadOptions={loadOptions}
                         autoFocus
                         inputId={useId()}
                         ref={ref => (selectRef.current = ref)}
@@ -82,14 +171,16 @@ export function SearchBar() {
                         onMenuClose={() => selectRef.current?.blur()}
                         onChange={onChange}
                         styles={{
+                            control: (provided) => ({
+                                ...provided,
+                                paddingLeft: '2rem',
+                            }),
                             input: style => ({ ...style, width: '100%' }),
-                            /* work around for https://github.com/JedWatson/react-select/issues/3857 */
                             placeholder: style => ({ ...style, pointerEvents: 'none' }),
                         }}
                         onInputChange={onInputChange}
                         components={{ DropdownIndicator }}
                         classNamePrefix="search-bar"
-                        /* workaround for https://github.com/JedWatson/react-select/issues/5714 */
                         onFocus={() => {
                             selectRef.current?.handleInputChange(search, { action: 'set-value' });
                         }}
@@ -100,7 +191,7 @@ export function SearchBar() {
     );
 }
 
-function buildProgramOptions(search: string, cluster: Cluster) {
+function buildProgramOptions(search: string, cluster: Cluster): SearchOptions | undefined {
     const matchedPrograms = Object.entries(PROGRAM_INFO_BY_ID).filter(([address, { name, deployments }]) => {
         if (!deployments.includes(cluster)) return false;
         return name.toLowerCase().includes(search.toLowerCase()) || address.includes(search);
@@ -120,7 +211,7 @@ function buildProgramOptions(search: string, cluster: Cluster) {
 
 const SEARCHABLE_LOADERS: LoaderName[] = ['BPF Loader', 'BPF Loader 2', 'BPF Upgradeable Loader'];
 
-function buildLoaderOptions(search: string) {
+function buildLoaderOptions(search: string): SearchOptions | undefined {
     const matchedLoaders = Object.entries(LOADER_IDS).filter(([address, name]) => {
         return (
             SEARCHABLE_LOADERS.includes(name) &&
@@ -140,7 +231,7 @@ function buildLoaderOptions(search: string) {
     }
 }
 
-function buildSysvarOptions(search: string) {
+function buildSysvarOptions(search: string): SearchOptions | undefined {
     const matchedSysvars = Object.entries(SYSVAR_IDS).filter(([address, name]) => {
         return name.toLowerCase().includes(search.toLowerCase()) || address.includes(search);
     });
@@ -157,7 +248,7 @@ function buildSysvarOptions(search: string) {
     }
 }
 
-function buildSpecialOptions(search: string) {
+function buildSpecialOptions(search: string): SearchOptions | undefined {
     const matchedSpecialIds = Object.entries(SPECIAL_IDS).filter(([address, name]) => {
         return name.toLowerCase().includes(search.toLowerCase()) || address.includes(search);
     });
@@ -174,140 +265,93 @@ function buildSpecialOptions(search: string) {
     }
 }
 
+function buildOptions(
+    search: string,
+    cluster: Cluster,
+    epoch?: number,
+    slotsInEpoch?: number
+): SearchOptions[] {
+    const matches = [];
+    if (!isNaN(Number(search))) {
+        const slot = Number(search);
+        if (slotsInEpoch && epoch) {
+            const results = [];
+            const epochApprox = Math.floor(slot / slotsInEpoch);
+            for (let i = -1; i <= 1; i++) {
+                results.push(epochApprox + i);
+            }
+            results.push(epochApprox);
+            for (let i = -1; i <= 1; i++) {
+                results.push(epochApprox + i);
+            }
+            results.forEach((epoch) => {
+                if (epoch > 0) {
+                    matches.push({
+                        label: `Epoch ${epoch}`,
+                        pathname: `/epoch/${epoch}`,
+                        value: [`${epoch}`],
+                    });
+                }
+            });
+        }
+        matches.push({
+            label: `Slot ${slot}`,
+            pathname: `/slot/${slot}`,
+            value: [`${slot}`],
+        });
+    }
+    return [
+        {
+            label: 'Blocks',
+            options: matches,
+        },
+        buildProgramOptions(search, cluster),
+        buildLoaderOptions(search),
+        buildSysvarOptions(search),
+        buildSpecialOptions(search),
+    ].filter(Boolean) as SearchOptions[];
+}
+
 async function buildTokenOptions(search: string, cluster: Cluster): Promise<SearchOptions | undefined> {
     const matchedTokens = await searchTokens(search, cluster);
 
     if (matchedTokens.length > 0) {
         return {
             label: 'Tokens',
-            options: matchedTokens,
+            options: matchedTokens.map((token) => ({
+                label: token.name,
+                pathname: '/token/' + token.address,
+                value: [token.name, token.address],
+            })),
         };
     }
 }
 
-async function buildDomainOptions(search: string) {
-    const domainInfoResponse = await fetch(`/api/domain-info/${search}`);
-    const domainInfo = (await domainInfoResponse.json()) as FetchedDomainInfo;
-
-    if (domainInfo && domainInfo.owner && domainInfo.address) {
-        return [
-            {
-                label: 'Domain Owner',
-                options: [
-                    {
-                        label: domainInfo.owner,
-                        pathname: '/address/' + domainInfo.owner,
-                        value: [search],
-                    },
-                ],
-            },
-            {
-                label: 'Name Service Account',
-                options: [
-                    {
-                        label: search,
-                        pathname: '/address/' + domainInfo.address,
-                        value: [search],
-                    },
-                ],
-            },
-        ];
-    }
-}
-
-// builds local search options
-function buildOptions(rawSearch: string, cluster: Cluster, currentEpoch?: bigint) {
-    const search = rawSearch.trim();
-    if (search.length === 0) return [];
-
-    const options = [];
-
-    const programOptions = buildProgramOptions(search, cluster);
-    if (programOptions) {
-        options.push(programOptions);
+async function buildDomainOptions(domain: string): Promise<SearchOptions | undefined> {
+    let domainInfo: FetchedDomainInfo | null = null;
+    try {
+        const response = await fetch('/api/domain-info/' + domain);
+        domainInfo = await response.json();
+    } catch (error) {
+        console.error('Failed to fetch domain info:', error);
     }
 
-    const loaderOptions = buildLoaderOptions(search);
-    if (loaderOptions) {
-        options.push(loaderOptions);
-    }
-
-    const sysvarOptions = buildSysvarOptions(search);
-    if (sysvarOptions) {
-        options.push(sysvarOptions);
-    }
-
-    const specialOptions = buildSpecialOptions(search);
-    if (specialOptions) {
-        options.push(specialOptions);
-    }
-
-    if (!isNaN(Number(search))) {
-        options.push({
-            label: 'Block',
+    if (domainInfo && domainInfo.address) {
+        return {
+            label: 'Domains',
             options: [
                 {
-                    label: `Slot #${search}`,
-                    pathname: `/block/${search}`,
-                    value: [search],
+                    label: domain,
+                    pathname: '/address/' + domainInfo.address,
+                    value: [domain, domainInfo.address],
                 },
             ],
-        });
-
-        // Parse as BigInt but not if it starts eg 0x or 0b
-        if (currentEpoch !== undefined && !/^0\w/.test(search) && BigInt(search) <= currentEpoch + 1n) {
-            options.push({
-                label: 'Epoch',
-                options: [
-                    {
-                        label: `Epoch #${search}`,
-                        pathname: `/epoch/${search}`,
-                        value: [search],
-                    },
-                ],
-            });
-        }
+        };
     }
-
-    // Prefer nice suggestions over raw suggestions
-    if (options.length > 0) return options;
-
-    try {
-        const decoded = bs58.decode(search);
-        if (decoded.length === 32) {
-            options.push({
-                label: 'Account',
-                options: [
-                    {
-                        label: search,
-                        pathname: '/address/' + search,
-                        value: [search],
-                    },
-                ],
-            });
-        } else if (decoded.length === 64) {
-            options.push({
-                label: 'Transaction',
-                options: [
-                    {
-                        label: search,
-                        pathname: '/tx/' + search,
-                        value: [search],
-                    },
-                ],
-            });
-        }
-    } catch (err) {
-        /* empty */
-    }
-
-    return options;
 }
 
-function DropdownIndicator() {
-    return (
-        <div className="search-indicator">
-            <Search className="me-2" size={15} />
-        </div>
-    );
-}
+const DropdownIndicator = () => (
+    <div className="p-2">
+        <Search className="feather-search" />
+    </div>
+);

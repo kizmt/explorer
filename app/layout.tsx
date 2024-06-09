@@ -4,11 +4,11 @@ import { ClusterModal } from '@components/ClusterModal';
 import { ClusterStatusBanner } from '@components/ClusterStatusButton';
 import { MessageBanner } from '@components/MessageBanner';
 import { Navbar } from '@components/Navbar';
-import { SearchBar } from '@components/SearchBar';
 import { ClusterProvider } from '@providers/cluster';
 import { ScrollAnchorProvider } from '@providers/scroll-anchor';
 import { Rubik } from 'next/font/google';
 import { Metadata } from 'next/types';
+
 import { Footer } from './components/Footer';
 
 export const metadata: Metadata = {
@@ -49,7 +49,6 @@ export default function RootLayout({
                             {children}
                         </div>
                         <Footer />
-
                     </ClusterProvider>
                 </ScrollAnchorProvider>
                 {analytics}
