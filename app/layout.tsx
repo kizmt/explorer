@@ -14,7 +14,7 @@ import { Footer } from './components/Footer';
 export const metadata: Metadata = {
     description: 'Inspect transactions, accounts, blocks, and more on the Solana blockchain',
     manifest: '/manifest.json',
-    title: 'Explorer | Solana',
+    title: 'Explorer | Helius',
     viewport: {
         initialScale: 1,
         maximumScale: 1,
