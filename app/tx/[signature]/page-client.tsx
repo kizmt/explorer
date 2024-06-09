@@ -171,6 +171,7 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
         return <ErrorCard retry={() => fetchStatus(signature)} text="Not Found" />;
     }
 
+    const SOL_TOKEN_IMAGE_URL = '/SOL.png'; // Replace with the actual URL
     const { info } = status.data;
 
     const transactionWithMeta = details?.data?.transactionWithMeta;
@@ -201,7 +202,7 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
     return (
         <div className="d-flex justify-content-center mt-5">
             <div className="card" style={{ maxWidth: '600px', minWidth: '400px' }}>
-                <div className="card-header align-items-center">
+                <div className="card-header align-items-center mb-2">
                     <h3 className="card-header-title">Overview</h3>
                     <Link className="btn btn-white btn-sm me-2" href={inspectPath}>
                         <Settings className="align-text-top me-2" size={13} />
@@ -216,13 +217,21 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
                         </button>
                     )}
                 </div>
-                <div className="d-flex justify-content-center mb-3">
-                    <div className="text-center">
-                        <p>Sender: ExampleSender</p>
-                        <p>Receiver: ExampleReceiver</p>
-                        <p>Amount: 1.23 SOL</p>
+                <div className="p-3">
+                    <div className="text-center border border-primary p-3 rounded">
+                        <div className="d-flex justify-content-center align-items-center mb-2">
+                            <div className="mx-3 text-muted">7DeVVqiDq…</div>
+                            <div className="mx-3 font-weight-bold">Sent</div>
+                            <div className="mx-3 text-muted">5SXVVJFyrc…</div>
+                        </div>
+                        <div className="d-flex justify-content-center align-items-center">
+                        <img src={SOL_TOKEN_IMAGE_URL} alt="SOL" style={{ height: '22px', marginRight: '5px', width: '22px' }} />
+
+                            <span className="font-weight-bold">1.23 SOL</span>
+                        </div>
                     </div>
                 </div>
+
 
                 <TableCardBody>
                     <tr>
