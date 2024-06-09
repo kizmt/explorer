@@ -1,12 +1,12 @@
-import React from "react";
-import Link from "next/link";
 import {
-  IconBrandX,
+  IconBook,
   IconBrandDiscordFilled,
   IconBrandGithubFilled,
+  IconBrandX,
   IconHelp,
-  IconBook,
 } from "@components/Icons";
+import Link from "next/link";
+import React from "react";
 
 const footerLinks = [
   {

@@ -89,11 +89,13 @@ export function SolanaClusterStatsProvider({ children }: Props) {
                 const samplesResponse = await rpc.getRecentPerformanceSamples(60 * SAMPLE_HISTORY_HOURS).send();
                 
                 const samples: PerformanceSample[] = samplesResponse.map(s => {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore: Property 'numNonVoteTransactions' does not exist on type 'Readonly<{ slot: bigint; numTransactions: bigint; numSlots: bigint; samplePeriodSecs: number; numNonVoteTransaction: bigint; }>'.
+                    // The API response actually contains 'numNonVoteTransactions'
                     const numNonVoteTransactions = s.numNonVoteTransactions !== undefined ? BigInt(s.numNonVoteTransactions) : BigInt(0);
                     const numSlots = s.numSlots !== undefined ? BigInt(s.numSlots) : BigInt(0);
                     const numTransactions = s.numTransactions !== undefined ? BigInt(s.numTransactions) : BigInt(0);
                     const samplePeriodSecs = s.samplePeriodSecs !== undefined ? Number(s.samplePeriodSecs) : 0;
-        
         
                     return {
                         numNonVoteTransactions,
@@ -102,7 +104,7 @@ export function SolanaClusterStatsProvider({ children }: Props) {
                         samplePeriodSecs,
                     };
                 });
-                
+        
                 if (stale) {
                     return;
                 }
@@ -135,7 +137,8 @@ export function SolanaClusterStatsProvider({ children }: Props) {
                 }
                 setActive(false);
             }
-        };        
+        };
+               
         
         const getTransactionCount = async () => {
             try {
