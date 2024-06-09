@@ -200,7 +200,7 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
 
     return (
         <div className="d-flex justify-content-center mt-5">
-            <div className="card" style={{ maxWidth: '600px' }}>
+            <div className="card" style={{ maxWidth: '600px', minWidth: '400px' }}>
                 <div className="card-header align-items-center">
                     <h3 className="card-header-title">Overview</h3>
                     <Link className="btn btn-white btn-sm me-2" href={inspectPath}>
@@ -236,7 +236,7 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
                         <td>Result</td>
                         <td className="text-lg-end">
                             <h3 className="mb-0">
-                                <span className={`badge bg-${statusClass}-soft`}>{statusText}</span>
+                                <span className={`badge bg-${statusClass}-soft`}>{statusText} </span>
                             </h3>
                         </td>
                     </tr>
@@ -260,7 +260,7 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
                         <td>Timestamp</td>
                         <td className="text-lg-end">
                             {info.timestamp !== 'unavailable' ? (
-                                displayTimestamp(info.timestamp * 1000) // Pass true to use short timezone name
+                                displayTimestamp(info.timestamp * 1000, true) // Pass true to use short timezone name
                             ) : (
                                 <span className="text-muted">Unavailable</span>
                             )}
@@ -276,7 +276,7 @@ function StatusCard({ signature, autoRefresh }: SignatureProps & AutoRefreshProp
 
                     <tr>
                         <td>Confirmations</td>
-                        <td className="text-lg-end">
+                        <td className="text-lg-end text-uppercase">
                             {info.confirmations !== 'max' ? (
                                 info.confirmations === undefined ? (
                                     <span className="text-muted">Unknown</span>
